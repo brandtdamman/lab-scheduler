@@ -272,6 +272,7 @@ if __name__=="__main__":
         section_counters[day[1]] = 1
 
     def weeklyNumbers(e):
+        #! TODO: Temporary workaround until all days are added.
         if e == -1:
             return "Monday"
         elif e == 0:
@@ -284,10 +285,8 @@ if __name__=="__main__":
             return "Friday"
         
     # print(longest_day[0])
-    for section in tuple_schedule[longest_day[0]][0]:
-        if fonce:
-            fonce = False
-            continue
+    # for section in tuple_schedule[longest_day[0]][0]:
+    while True:
         # Determine if there should be fill-ins for
         #   certain sections
         needSpot = []
@@ -302,6 +301,9 @@ if __name__=="__main__":
         for value in needSpot:
             if smallest_value > value:
                 smallest_value = value
+        
+        if smallest_value == 100:
+            break
 
         # print(("|" + ("-" * column_length) + "|") * len(tuple_schedule))
         for i in range(row_height):
@@ -309,7 +311,7 @@ if __name__=="__main__":
             output = ''
             for result in needSpot:
                 # print(tuple_schedule[day_counter][0][section_counter])
-                if result == smallest_value or section_counters[tuple_schedule[longest_day[0]][1]] == longest_day[1] - 1 and result != 100:
+                if result == smallest_value:
                     output = output + tuple_schedule[day_counter][0][section_counters[weeklyNumbers(day_counter)]][0][i]
                 else:
                     output = output + "|" + (" " * column_length) + "|"
