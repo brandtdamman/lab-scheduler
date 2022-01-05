@@ -79,10 +79,10 @@ if __name__=="__main__":
     for ta in ta_names:
         if ta_names[ta] == True:
             continue
-        print(ta)
+        # print(ta)
         ta_ids[ta_names[ta][2]] = ta
 
-    print(ta_ids)
+    # print(ta_ids)
 
     # 2. Find longest name.
     max_ta = None
@@ -97,9 +97,12 @@ if __name__=="__main__":
         column_length = len(max_ta)
 
     # 3. Gather lab sections.
-    # print(ta_schedule['schedule'])
     #? The magical 3 is for Lab section #, time, and buffer space
+    #?      Need to ensure _some_ value for maxTaPerLab is set.
+    # TODO  Probably do a preemptive scan and see the largest TA
+    #       \-> gathering rather than a preset magick number.
     row_height = ta_schedule.get('maxTaPerLab', 2) + 3
+    # print(row_height)
 
     """
 
@@ -107,7 +110,7 @@ if __name__=="__main__":
     Solution: Do not conform to a grid for now.
 
     |-------------|
-    | Section  4  |
+    | Section 4   |
     | 8:00-9:55   |
     |             |
     | Daryl       |
@@ -126,16 +129,39 @@ if __name__=="__main__":
     def sortingFunc(e):
         return e['startTime']
 
+    #! Debug value to compare adding spacing buffer before
+    #!      or after the TA substring.
+    _AFTER = False
+
+    daily_labsections = {}
     for day in ta_schedule['schedule']:
-        # Print the header
-        print(("| {:" + str(column_length - 1) + "}|").format(day['day']))
-        print("|" + ("-" * column_length) + "|")
+        # Setup the day's lab sections, linearly
+        today = day['day'] #? Mildly confusing, change later?
+
+        # If for some weird reason there are duplicate days,
+        #   go ahead and simply append to the bottom...?
+        if not daily_labsections.get(today, None):
+            daily_labsections[today] = []
+
+            # Print the header
+            header = ("| {:" + str(column_length - 1) + "}|").format(today)
+            header = header + "\n|" + ("-" * column_length) + "|"
+            daily_labsections[today].append((header, 0))
 
         # Sort by section start time and print respectively
         day['labs'].sort(key=sortingFunc)
 
         # TODO: Move elsewhere...
-        def formatTime(input_time):
+        def formatTime(input_time: float) -> str:
+            """Converts a floating point time into string format
+            using standard formatting (hh:mm) with no regard to
+            AM versus PM.
+
+            :param input_time: floating-point time value from json schedule
+            :type input_time: float
+            :return: finalized output string
+            :rtype: str
+            """
             floating_time = 0
             if isinstance(input_time, float):
                 floating_time = round((input_time - int(input_time)) * 100)
@@ -147,21 +173,57 @@ if __name__=="__main__":
             output = f"{input_time}:{floating_time:02}"
             return output
 
+        # Add each respective lab section into the "grid list"
         for lab in day['labs']:
-            print(("| {:" + str(column_length - 1) + "}|").format(f"Section {lab['id']}"))
+            row_counter = 3
+            current_section = ("| {:" + str(column_length - 1) + "}|").format(f"Section {lab['id']}")
 
             # Convert times in schedule to real times
             start_time = formatTime(lab['startTime'])
             end_time = formatTime(lab['endTime'])
 
-            print(("| {:" + str(column_length - 1) + "}|").format(f"{start_time}-{end_time}"))
+            # TODO: Nested string formatting.  Needs improvement.
+            # Needs to stay on one line or broken into chunks.
+            current_section = f'{current_section}\n{("| {:" + str(column_length - 1) + "}|").format(f"{start_time}-{end_time}")}'
+
+            # Add buffer from section number and time slot
+            current_section = current_section + ("\n|" + (" " * column_length) + "|")
 
             # Add respective TAs to the listing
-            print("|" + (" " * column_length) + "|")
+            ta_substring = ''
             for ta in lab['tas']:
-                print(("| {:" + str(column_length - 1) + "}|").format(ta_ids[ta['id']]))
+                ta_substring = ta_substring + ("\n| {:" + str(column_length - 1) + "}|").format(ta_ids[ta['id']])
+                row_counter = row_counter + 1
 
-            print("|" + ("-" * column_length) + "|")
+            if not _AFTER:
+                # Append TA substring to current section string
+                current_section = current_section + ta_substring
+            
+            # If the current section is too short, add buffers.
+            if row_counter < row_height:
+                for x in range(row_height - row_counter):
+                    current_section = current_section + ("\n|" + (" " * column_length) + "|")
 
-        # Clean up day
-        print('\n')
+            if _AFTER:
+                # Append TA substring to current section string
+                current_section = current_section + ta_substring
+
+            #? Consider removing this during the print-out process
+            current_section = current_section + "\n|" + ("-" * column_length) + "|"
+
+            daily_labsections[today].append((current_section, lab['startTime']))
+
+    # 5. Find longest day, add filler spaces based on time slots
+    #?  \-> Sort by hours.  Won't line up perfectly but it will be close enough.
+    # for section in daily_labsections['Thursday']:
+    #     for element in section:
+    #         print(element, end='')
+    #     print()
+    longest_day = None
+    for day in daily_labsections:
+        if not longest_day or longest_day[1] < len(daily_labsections[day]):
+            longest_day = (day, len(daily_labsections[day]))
+
+    # print(f"{longest_day[0]} is the longest day with {longest_day[1] - 1} sections.")
+
+    # 5a. Print everything as-is for testing purposes.
