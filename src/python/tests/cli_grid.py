@@ -146,7 +146,7 @@ if __name__=="__main__":
             # Print the header
             header = ("| {:" + str(column_length - 1) + "}|").format(today)
             header = header + "\n|" + ("-" * column_length) + "|"
-            daily_labsections[today].append((header, 0))
+            daily_labsections[today].append((header.split('\n'), 0))
 
         # Sort by section start time and print respectively
         day['labs'].sort(key=sortingFunc)
@@ -211,7 +211,7 @@ if __name__=="__main__":
             #? Consider removing this during the print-out process
             current_section = current_section + "\n|" + ("-" * column_length) + "|"
 
-            daily_labsections[today].append((current_section, lab['startTime']))
+            daily_labsections[today].append((current_section.split('\n'), lab['startTime']))
 
     # 5. Find longest day, add filler spaces based on time slots
     #?  \-> Sort by hours.  Won't line up perfectly but it will be close enough.
@@ -219,11 +219,110 @@ if __name__=="__main__":
     #     for element in section:
     #         print(element, end='')
     #     print()
-    longest_day = None
-    for day in daily_labsections:
-        if not longest_day or longest_day[1] < len(daily_labsections[day]):
-            longest_day = (day, len(daily_labsections[day]))
+    # longest_day = None
+    # for day in daily_labsections:
+    #     if not longest_day or longest_day[1] < len(daily_labsections[day]):
+    #         longest_day = (day, len(daily_labsections[day]))
 
     # print(f"{longest_day[0]} is the longest day with {longest_day[1] - 1} sections.")
+    def weeklyOrder(e):
+        if e[1] == "Monday":
+            return 0
+        elif e[1] == "Tuesday":
+            return 1
+        elif e[1] == "Wednesday":
+            return 2
+        elif e[1] == "Thursday":
+            return 3
+        elif e[1] == "Friday":
+            return 4
+        else:
+            return 100
 
-    # 5a. Print everything as-is for testing purposes.
+    tuple_schedule = []
+    def tupleScheduleSorting(e):
+        return e[1]
+
+    for day in daily_labsections:
+        daily_labsections[day].sort(key=tupleScheduleSorting)
+        tuple_schedule.append((daily_labsections[day], day))
+
+    tuple_schedule.sort(key=weeklyOrder)
+    # for day in tuple_schedule:
+    #     for section in day[0]:
+    #         print(section, end='')
+    #     print()
+
+    longest_day = (0, len(tuple_schedule[0][0]))
+    for i in range(1, len(tuple_schedule)):
+        if longest_day[1] < len(tuple_schedule[i][0]):
+            longest_day = (i, len(tuple_schedule[i][0]))
+
+    # Print the headers
+    for i in range(2):
+        output = ''
+        for day in tuple_schedule:
+            output = output + day[0][0][0][i]
+        print(output)
+
+    # Now the sections!
+    fonce = True
+    section_counters = {}
+    for day in tuple_schedule:
+        section_counters[day[1]] = 1
+
+    def weeklyNumbers(e):
+        if e == -1:
+            return "Monday"
+        elif e == 0:
+            return "Tuesday"
+        elif e == 1:
+            return "Wednesday"
+        elif e == 2:
+            return "Thursday"
+        else:
+            return "Friday"
+        
+    # print(longest_day[0])
+    for section in tuple_schedule[longest_day[0]][0]:
+        if fonce:
+            fonce = False
+            continue
+        # Determine if there should be fill-ins for
+        #   certain sections
+        needSpot = []
+        for day in tuple_schedule:
+            if len(day[0]) <= section_counters[day[1]]:
+                needSpot.append(100)
+            else:
+                needSpot.append(round(day[0][section_counters[day[1]]][1]))
+
+        # print(needSpot)
+        smallest_value = 100
+        for value in needSpot:
+            if smallest_value > value:
+                smallest_value = value
+
+        # print(("|" + ("-" * column_length) + "|") * len(tuple_schedule))
+        for i in range(row_height):
+            day_counter = 0
+            output = ''
+            for result in needSpot:
+                # print(tuple_schedule[day_counter][0][section_counter])
+                if result == smallest_value or section_counters[tuple_schedule[longest_day[0]][1]] == longest_day[1] - 1 and result != 100:
+                    output = output + tuple_schedule[day_counter][0][section_counters[weeklyNumbers(day_counter)]][0][i]
+                else:
+                    output = output + "|" + (" " * column_length) + "|"
+                day_counter = day_counter + 1
+            print(output)
+        
+        # section_counter = section_counter + 1
+        count = 0
+        for day in section_counters:
+            # print(day)
+            if needSpot[count] == smallest_value:
+                section_counters[day] = section_counters[day] + 1
+            count = count + 1
+        
+        print(("|" + ("-" * column_length) + "|") * len(tuple_schedule))
+
