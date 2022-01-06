@@ -3,94 +3,71 @@
 
 import json
 
+def open_json(fileInfo: str) -> dict:
+    json_file = None
+
+    # Continuously loops until user enters correct filename
+    #   or manually closes program via KeyboardInterrupt
+    while not json_file:
+        print(f"Enter {fileInfo} filename: ")
+        filename = input()
+
+        # Attempt to open the file, otherwise print a warning message
+        try:
+            with open(filename) as file:
+                json_file = file.read()
+        except IOError:
+            print(f"Warning: IO errors.  Check permissions and file existance.")
+
+    # Deserialize and return dictionary
+    return json.loads(json_file)
+
 if __name__=="__main__":
-    json_lines = None
-
-    while not json_lines:
-        print(f"Enter test schedule filename: ")
-        filename = input()
-
-        try:
-            with open(filename) as file:
-                json_lines = file.readlines()
-        except IOError:
-            print(f"Warning: IO errors.  Check permissions and file existance.")
-
-    # TODO: See if there is a better way of handling file read.
-    json_string = ''
-    for line in json_lines:
-        json_string += line + '\n'
-
-    ta_schedule = json.loads(json_string)
-
-    # TODO: Serialize...?
-
-    # print(ta_schedule)
-    json_lines = None
-    while not json_lines:
-        print(f"Enter test TA list filename: ")
-        filename = input()
-
-        try:
-            with open(filename) as file:
-                json_lines = file.readlines()
-        except IOError:
-            print(f"Warning: IO errors.  Check permissions and file existance.")
-
-    json_string = ''
-    for line in json_lines:
-        json_string += line + '\n'
-
-    ta_list = json.loads(json_string)
+    # 0. Deserialize JSON into dictionaries
+    ta_schedule = open_json("test schedule")
+    ta_list = open_json("test TA list")
     
     # 1. Collect names into new dictionary.
-    ta_names = {}
+    tas = {}
     for ta in ta_list:
-        # print(ta)
+        #! If name titles are not desired, the TA list must not include
+        #!  said titles unless otherwise noted.  A fix should still be
+        #!  made regardless.
+
+        # Find the left-most space, grab first name.
         space = ta['name'].index(' ')
         first_name = ta['name'][:space]
 
-        # if len(first_name) < 3:
-        #     # ! Bad fix for titles in name
-        #     #FIXME
-        #     second_space = ta['name'][space:].index(' ')
-        #     if second_space != -1:
-        #         first_name = ta['name'][space:second_space]
-
-        if not ta_names.get(first_name, None):
-            ta_names[first_name] = (ta['name'], space, ta['id'])
-        elif ta_names[first_name] == True:
+        # If the TA has not been added, add new entry.
+        if not tas.get(first_name, None):
+            tas[first_name] = (ta['name'], space, ta['id'])
+        elif tas[first_name] == True:
             # TODO: Avoid duplicate First Name, Last Initial.
             last_space = ta['name'].rfind(' ')
             full_name = f"{first_name} {ta['name'][last_space + 1]}."
-            ta_names[full_name] = (ta['name'], space, ta['id'])
+            tas[full_name] = (ta['name'], space, ta['id'])
         else:
-            other_name, __, other_id = ta_names[first_name]
-            ta_names[first_name] = True
+            other_name, __, other_id = tas[first_name]
+            tas[first_name] = True
 
             #! TODO: DOES NOT ADD NEW TA TO DICTIONARY, ONLY UPDATES OLD.
             last_space = other_name.rfind(' ')
             full_name = f"{first_name} {other_name[last_space + 1]}."
-            ta_names[full_name] = (ta['name'], space, other_id)
+            tas[full_name] = (ta['name'], space, other_id)
 
-    # for ta in ta_names:
-    #     print(ta)
+    # Transfer into name-based 
     ta_ids = {}
-    for ta in ta_names:
-        if ta_names[ta] == True:
+    for ta in tas:
+        if tas[ta] == True:
             continue
-        # print(ta)
-        ta_ids[ta_names[ta][2]] = ta
-
-    # print(ta_ids)
+        ta_ids[tas[ta][2]] = ta
 
     # 2. Find longest name.
     max_ta = None
-    for ta in ta_names:
+    for ta in tas:
         if not max_ta or len(max_ta) < len(ta):
             max_ta = ta
 
-    # print(max_ta)
     #? Filler section title that is the minimum width
     column_length = len(" 12:00-12:00 ")
     if column_length < len(max_ta):
@@ -102,12 +79,9 @@ if __name__=="__main__":
     # TODO  Probably do a preemptive scan and see the largest TA
     #       \-> gathering rather than a preset magick number.
     row_height = ta_schedule.get('maxTaPerLab', 2) + 3
-    # print(row_height)
-
     """
 
     Example time chunk.
-    Solution: Do not conform to a grid for now.
 
     |-------------|
     | Section 4   |
