@@ -16,7 +16,6 @@ class Lab:
                     end_time: float, max_tas: int):
         self._id = identifier
 
-        # TODO: Perform validation here?
         self._start = start_time
         self._start_str = self._converttime(self._start)
         self._end = end_time

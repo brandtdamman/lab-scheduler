@@ -130,3 +130,4 @@ dmypy.json
 src/python/tests/test_schedule.json
 src/python/tests/sample_tas.json
 src/python/tests/test_schedule2.json
+src/python/tests/spring21.json

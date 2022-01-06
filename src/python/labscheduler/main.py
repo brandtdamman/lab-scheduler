@@ -73,7 +73,13 @@ def semesterschedule():
 
         print(f'Lab section {section_number} added to schedule')
 
+    # Temporary function for sorting day-to-day schedule.
+    def sortingKey(e):
+        return e._start
+
     for day in current_schedule._week:
+        # Sort, then print.
+        current_schedule._week[day].sort(key=sortingKey)
         print(day, current_schedule._week[day])
 
 def _isfloating(val: str) -> bool:
