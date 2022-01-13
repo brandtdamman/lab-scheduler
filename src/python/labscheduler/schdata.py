@@ -1,25 +1,46 @@
 # Placeholder comment/docstring
 
-class Ta:
+class Serialized:
+    def __init__(self):
+        pass
+
+    def todict(self):
+        from _support import rtd_dict, rtd_list
+        output = {}
+        for key in self.__dict__:
+            if not key[0] == '_':
+                element = self.__dict__[key]
+                if isinstance(element, list):
+                    output[key] = rtd_list(element)
+                elif isinstance(element, dict):
+                    output[key] = rtd_dict(element)
+                elif issubclass(element.__class__, Serialized):
+                    output[key] = element.todict()
+                else:
+                    output[key] = element
+
+        return output
+
+class Ta(Serialized):
     def __init__(self, name: str, identifier: int):
-        self._name = name
-        self._id = identifier
+        self.name = name
+        self.id = identifier
 
     def __repr__(self):
-        return self._id
+        return str(self.id)
 
     def __str__(self):
-        return self._name
+        return self.name
 
-class Lab:
+class Lab(Serialized):
     def __init__(self, identifier: int, start_time: float,
                     end_time: float, max_tas: int):
-        self._id = identifier
+        self.id = identifier
+        self.start_time = start_time
+        self.end_time = end_time
 
-        self._start = start_time
-        self._start_str = self._converttime(self._start)
-        self._end = end_time
-        self._end_str = self._converttime(self._end)
+        self._start_str = self._converttime(self.start_time)
+        self._end_str = self._converttime(self.end_time)
         self._maxLen = max_tas
 
         self.cleartas()
@@ -38,43 +59,44 @@ class Lab:
         return output
 
     def addta(self, assistant: Ta):
-        if len(self._tas) == self._maxLen:
+        if len(self.tas) == self._maxLen:
             raise ValueError("Cannot add another teaching assistant to lab.")
-        self._tas.append(assistant)
+        self.tas.append(assistant)
 
     def removeta(self, assistant):
         # Need to find out how to overload...?
-        if len(self._tas) == 0:
+        if len(self.tas) == 0:
             raise ValueError("Cannot remove from empty teaching assistants list.")
         # TODO: Return the removed assistant
 
     def cleartas(self):
-        self._tas = []
+        self.tas = []
 
     def __repr__(self):
-        return str(self)
+        return f'#{self.id} @ {self._start_str}-{self._end_str}'
 
     def __str__(self):
-        return f'Lab Section {self._id} at {self._start_str}-{self._end_str}'
+        return f'Lab Section {self.id} at {self._start_str}-{self._end_str}'
 
-class Schedule:
+class Schedule(Serialized):
     def __init__(self):
-        self._week: dict = {}
+        self.week: dict = {}
         
         # Setup the workweek
-        self._week['Monday'] = []
-        self._week['Tuesday'] = []
-        self._week['Wednesday'] = []
-        self._week['Thursday'] = []
-        self._week['Friday'] = []
+        self.week['Monday'] = []
+        self.week['Tuesday'] = []
+        self.week['Wednesday'] = []
+        self.week['Thursday'] = []
+        self.week['Friday'] = []
 
     def _matchDay(self, val: str) -> bool:
-        for key in self._week:
-            if key == val:
+        for key in self.week:
+            if key == val or key[0] == val.upper():
                 return True
         return False
 
     def addsection(self, section: Lab, day: str):
-        if not self._matchDay(day):
+        from _support import match_day
+        if not match_day(day):
             raise ValueError("Invalid week day.")
-        self._week[day].append(section)
+        self.week[day].append(section)
