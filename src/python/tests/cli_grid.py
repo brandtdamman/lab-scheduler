@@ -247,13 +247,14 @@ if __name__=="__main__":
 
     def weeklyNumbers(e):
         #! TODO: Temporary workaround until all days are added.
-        if e == -1:
+        # FIXME -1 should be used for Monday if not included in tests until fix
+        if e == 0:
             return "Monday"
-        elif e == 0:
-            return "Tuesday"
         elif e == 1:
-            return "Wednesday"
+            return "Tuesday"
         elif e == 2:
+            return "Wednesday"
+        elif e == 3:
             return "Thursday"
         else:
             return "Friday"
