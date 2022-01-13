@@ -4,6 +4,8 @@
     :author: Daryl Damman
     :since: 03-January-2022
 """
+from typing import Optional
+
 from schdata import *
 
 def semesterschedule():
@@ -11,7 +13,6 @@ def semesterschedule():
     os.system('cls')
 
     print(' CREATING SEMESTER SCHEDULE\n' + '=' * 28, end='\n\n')
-    # print(len('CREATING SEMESTER SCHEDULE'))
 
     # Determine how many TAs may be added to any given section
     print('Maximum number of TAs per lab? >>', end=' ')
@@ -23,6 +24,8 @@ def semesterschedule():
         max_tas = 2
 
     current_schedule = Schedule()
+
+    import _support
 
     # Begin lab loop.
     while True:
@@ -38,56 +41,58 @@ def semesterschedule():
         print('\t 9.55 --> 9:55 AM')
         print('\t14.25 --> 2:25 PM')
 
-        while True:
-            print(' >>', end=' ')
-            start_time = input()
-            if not _isfloating(start_time):
-                print(f'Invalid time ({start_time}) inputted. Try again.')
-                continue
-            else:
-                start_time = float(start_time)
-                break
+        start_time = _support.r_input(None, "", ' >> ', float, _support.isfloating)
+        # while True:
+        #     print(' >>', end=' ')
+        #     start_time = input()
+        #     if not isfloating(start_time):
+        #         print(f'Invalid time ({start_time}) inputted. Try again.')
+        #         continue
+        #     else:
+        #         start_time = float(start_time)
+        #         break
 
         print('When does this section end (same format as start)?')
-        while True:
-            print(' >>', end=' ')
-            end_time = input()
-            if not _isfloating(end_time):
-                print(f'Invalid time ({end_time}) inputted. Try again.')
-                continue
-            else:
-                end_time = float(end_time)
-                break
+        end_time = _support.r_input(None, "", ' >> ', float, _support.isfloating)
+        # while True:
+        #     print(' >>', end=' ')
+        #     end_time = input()
+        #     if not isfloating(end_time):
+        #         print(f'Invalid time ({end_time}) inputted. Try again.')
+        #         continue
+        #     else:
+        #         end_time = float(end_time)
+        #         break
         
         current_section = Lab(section_number, start_time, end_time, max_tas)
         print('Lab section made.\nWhat day is this secion held?')
 
-        while True:
-            print(' >>', end=' ')
-            day = input()
-            try:
-                current_schedule.addsection(current_section, day)
-                break
-            except ValueError as e:
-                print(str(e))
+        day = _support.r_input(None, "Please enter M, T, W, R, or F (weekday)", ' >> ', str, _support.match_day)
+        # while True:
+        #     print(' >>', end=' ')
+        #     day = input()
+        #     try:
+        #         current_schedule.addsection(current_section, day)
+        #         break
+        #     except ValueError as e:
+        #         print(str(e))
 
         print(f'Lab section {section_number} added to schedule')
 
     # Temporary function for sorting day-to-day schedule.
-    def sortingKey(e):
-        return e._start
+    def labSorting(e: Lab):
+        return e.start_time
 
-    for day in current_schedule._week:
+    for day in current_schedule.week:
         # Sort, then print.
-        current_schedule._week[day].sort(key=sortingKey)
-        print(day, current_schedule._week[day])
+        current_schedule.week[day].sort(key=labSorting)
+        print(day, current_schedule.week[day])
 
-def _isfloating(val: str) -> bool:
-    try:
-        float(val)
-        return True
-    except ValueError:
-        return False
+    # continue to next part of the scheduler
+    assigntas(current_schedule=current_schedule)
+
+def assigntas(current_schedule: Optional[Schedule] = None) -> None:
+    pass
 
 def main():
     """ Entry point for Lab Scheduler application.
