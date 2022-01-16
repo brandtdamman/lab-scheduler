@@ -16,15 +16,25 @@ class Serialized:
                     output[key] = rtd_dict(element)
                 elif issubclass(element.__class__, Serialized):
                     output[key] = element.todict()
+                elif isinstance(element, AcademicRank):
+                    output[key] = element.name.lower()
                 else:
                     output[key] = element
 
         return output
 
+from enum import Enum
+class AcademicRank(Enum):
+    UNDERGRAD = 0
+    GRADUATE = 1
+
 class Ta(Serialized):
     def __init__(self, name: str, identifier: int):
-        self.name = name
-        self.id = identifier
+        self.name: str = name
+        self.id: int = identifier
+        self.senior_ta: bool = False
+        self.academic_rank: AcademicRank = AcademicRank.UNDERGRAD
+        self.preference: list = []
 
     def __repr__(self):
         return str(self.id)

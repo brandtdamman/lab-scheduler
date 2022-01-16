@@ -93,3 +93,58 @@ def jsontoschedule(filename: str) -> Schedule:
     
     # Return imported schedule.
     return current_schedule
+
+def jsontotas(filename: str) -> (list[Ta], int, int):
+    """Creates a list of TAs from given JSON file.  All TAs in the
+    JSON file must have an ID, full name, academic rank (undergrad/grad),
+    seniority rank, and a preference list.
+
+    Example:
+    {
+        "id": 1,
+        "name": "Daryl Damman",
+        "academic_rank": "undergrad",
+        "senior_ta": true,
+        "preference": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ]
+    }
+
+    Each preference must correspond to a preexisting lab section.
+    The order of preference matters, higher on the list means they
+    will be placed there first and foremost, if possible.
+    Fewer preferences mean less lab schedule possibilities.
+
+    For a full example of what the JSON file should look like,
+    check the tests folder for example files.
+
+    :param filename: name of TA JSON file
+    :type filename: str
+    :return: list of imported TA objects
+    :rtype: list[Ta]
+    """
+    file_dict: dict = j_open(filename)
+    tas = list()
+
+    # Grab TA allowances from file first.
+    undergrad_max: int = file_dict['lab_allowances']['undergrad']
+    graduate_max: int = file_dict['lab_allowances']['graduate']
+
+    # Create TA objects for each TA found.
+    from schdata import AcademicRank
+    for ta_dict in file_dict['tas']:
+        ta = Ta(ta_dict['name'], ta_dict['id'])
+        if ta_dict['academic_rank'] == 'graduate':
+            ta.academic_rank = AcademicRank.GRADUATE
+        else:
+            ta.academic_rank = AcademicRank.UNDERGRAD
+
+        ta.senior_ta = ta_dict['senior_ta']
+        ta.preference = ta_dict['preference']
+        tas.append(ta)
+
+    return (tas, undergrad_max, graduate_max)

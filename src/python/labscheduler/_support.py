@@ -1,5 +1,5 @@
 # placeholder comment/docstring
-from schdata import Serialized
+from schdata import Serialized, AcademicRank
 
 def rtd_dict(root: dict) -> dict:
     placeholder = dict()
@@ -11,6 +11,8 @@ def rtd_dict(root: dict) -> dict:
             placeholder[key] = rtd_list(element)
         elif issubclass(element.__class__, Serialized):
             placeholder[key] = element.todict()
+        elif isinstance(element, AcademicRank):
+            placeholder[key] = element.name.lower()
         else:
             placeholder[key] = element
 
@@ -25,6 +27,10 @@ def rtd_list(root: list) -> list:
             placeholder.append(rtd_list(element))
         elif issubclass(element.__class__, Serialized):
             placeholder.append(element.todict())
+        elif isinstance(element, AcademicRank):
+            placeholder.append(element.name.lower())
+        elif isinstance(element, bool):
+            placeholder.append(str(element).lower())
         else:
             placeholder.append(element)
 
