@@ -5,43 +5,7 @@ from fileio import j_open
 def grid(schedule: dict) -> None:
     #! TODO: NEED TO VALIDATE DICTIONARY!!
 
-    # # 1. Collect names into new dictionary.
-    # tas = {}
-    # for ta in schedule['tas']:
-    #     #! If name titles are not desired, the TA list must not include
-    #     #!  said titles unless otherwise noted.  A fix should still be
-    #     #!  made regardless.
-    #     print(ta)
-
-    #     # Find the left-most space, grab first name.
-    #     space = len(ta['name'])#.index(' ')
-    #     first_name = ta['name']
-
-    #     # If the TA has not been added, add new entry.
-    #     if not tas.get(first_name, None):
-    #         tas[first_name] = (ta['name'], space, ta['id'])
-    #     elif tas[first_name] == True:
-    #         # TODO: Avoid duplicate First Name, Last Initial.
-    #         last_space = ta['name'].rfind(' ')
-    #         full_name = f"{first_name} {ta['name'][last_space + 1]}."
-    #         tas[full_name] = (ta['name'], space, ta['id'])
-    #     else:
-    #         other_name, __, other_id = tas[first_name]
-    #         tas[first_name] = True
-
-    #         #! TODO: DOES NOT ADD NEW TA TO DICTIONARY, ONLY UPDATES OLD.
-    #         last_space = other_name.rfind(' ')
-    #         full_name = f"{first_name} {other_name[last_space + 1]}."
-    #         tas[full_name] = (ta['name'], space, other_id)
-
-    # # Transfer into name-based 
-    # ta_ids = {}
-    # for ta in tas:
-    #     if tas[ta] == True:
-    #         continue
-    #     ta_ids[tas[ta][2]] = ta
-
-    # 2. Find longest name.
+    # 2. Find longest name, if any are present.
     max_ta = None
     for ta in schedule['tas']:
         if not max_ta or len(max_ta) < len(ta['name']):
@@ -58,20 +22,6 @@ def grid(schedule: dict) -> None:
     # TODO  Probably do a preemptive scan and see the largest TA
     #       \-> gathering rather than a preset magick number.
     row_height = schedule.get('max_tas', 2) + 3
-    """
-
-    Example time chunk.
-
-    |-------------|
-    | Section 4   |
-    | 8:00-9:55   |
-    |             |
-    | Daryl       |
-    | Maxwell     |
-    | Rayhanul    |
-    |-------------|
-
-    """
 
     # 4. Print schedule...?
     # TODO: Find a solution for overlapping labs.
@@ -168,16 +118,6 @@ def grid(schedule: dict) -> None:
 
     # 5. Find longest day, add filler spaces based on time slots
     #?  \-> Sort by hours.  Won't line up perfectly but it will be close enough.
-    # for section in daily_labsections['Thursday']:
-    #     for element in section:
-    #         print(element, end='')
-    #     print()
-    # longest_day = None
-    # for day in daily_labsections:
-    #     if not longest_day or longest_day[1] < len(daily_labsections[day]):
-    #         longest_day = (day, len(daily_labsections[day]))
-
-    # print(f"{longest_day[0]} is the longest day with {longest_day[1] - 1} sections.")
     def weeklyOrder(e):
         if e[1] == "Monday":
             return 0
@@ -201,10 +141,6 @@ def grid(schedule: dict) -> None:
         tuple_schedule.append((daily_labsections[day], day))
 
     tuple_schedule.sort(key=weeklyOrder)
-    # for day in tuple_schedule:
-    #     for section in day[0]:
-    #         print(section, end='')
-    #     print()
 
     longest_day = (0, len(tuple_schedule[0][0]))
     for i in range(1, len(tuple_schedule)):
@@ -225,8 +161,6 @@ def grid(schedule: dict) -> None:
         section_counters[day[1]] = 1
 
     def weeklyNumbers(e):
-        #! TODO: Temporary workaround until all days are added.
-        # FIXME -1 should be used for Monday if not included in tests until fix
         if e == 0:
             return "Monday"
         elif e == 1:
@@ -238,8 +172,6 @@ def grid(schedule: dict) -> None:
         else:
             return "Friday"
         
-    # print(longest_day[0])
-    # for section in tuple_schedule[longest_day[0]][0]:
     while True:
         # Determine if there should be fill-ins for
         #   certain sections
