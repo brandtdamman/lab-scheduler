@@ -90,11 +90,81 @@ def semesterschedule():
         print(day, current_schedule.week[day])
 
     # continue to next part of the scheduler
-    assigntas(current_schedule=current_schedule)
+    createtas(current_schedule=current_schedule)
+
+def createtas(current_schedule: Optional[Schedule] = None) -> None:
+    """Requests a file for all TAs teaching the course or allows
+    user to manually enter each TA individually in the console.
+
+    All TAs must have a seniority rank, top 3 preferences, ID,
+    and full name.
+
+    :param current_schedule: schedule if already in-progress, defaults to None
+    :type current_schedule: Schedule, optional
+    """
+    from _support import r_input, isjson
+    import os
+
+    #! TODO: Call _support function to change which screen clear is
+    #   \-> called.
+    os.system('cls')
+
+    if not current_schedule:
+        # Need to import schedule since there isn't one yet.
+        filename = r_input('Enter filename of schedule (must be .JSON filetype).',\
+            'Must be of form <NAME>.json', ' >> ', str, isjson)
+        from fileio import jsontoschedule
+        current_schedule = jsontoschedule(filename)
+
+    def yn_input(val: str) -> bool:
+        val = val.lower()
+        if val == 'y' or val == 'yes' or val == '':
+            return True
+        return False
+
+    resp = r_input('Do you wish to provide a JSON file of TAs?',\
+        "This shouldn't happen.", ' >> ', str, yn_input)
+    
+    resp = yn_input(resp)
+    if resp:
+        # grab from file
+        filename = r_input('Enter the filename for TA list.',\
+            'Must be of form <NAME>.json', ' >> ', str, isjson)
+        
+        # TODO: Write fileio function to import JSON to TA list.
+        pass
 
 def assigntas(current_schedule: Optional[Schedule] = None) -> None:
+    """Subroutine to automagically solve for one or more potential
+    lab schedules where all TAs are assigned based on preference,
+    seniority rank, and scheduling conflicts.
+
+    :param current_schedule: schedule if already in-progress, defaults to None
+    :type current_schedule: Schedule, optional
+    """
+    from _support import r_input
+    import os
+
+    #! TODO: Call _support function to change which screen clear is
+    #   \-> called.
+    os.system('cls')
+
     if not current_schedule:
-        print('NOT YET IMPLEMENTED.')
+        # Need to import schedule since there isn't one yet.
+        def isjson(filename: str) -> bool:
+            period = filename.rfind('.')
+            if period == -1:
+                return False
+            
+            if filename[period:] != 'json':
+                return False
+
+            return True
+            
+        filename = r_input('Enter filename of schedule (must be .JSON filetype).',\
+            'Must be of form <NAME>.json', ' >> ', str, isjson)
+        from fileio import jsontoschedule
+        current_schedule = jsontoschedule(filename)
 
     from display import grid
     grid(current_schedule.todict())

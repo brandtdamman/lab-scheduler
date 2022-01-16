@@ -64,4 +64,32 @@ def jp_open() -> Optional[dict]:
     # Deserialize and return dictionary
     return json.loads(json_file)
 
-#
+from schdata import Lab, Ta, Schedule
+def jsontoschedule(filename: str) -> Schedule:
+    """Creates a Schedule object from a JSON file.
+
+    :param filename: name of JSON file
+    :type filename: str
+    :return: imported schedule based on JSON file
+    :rtype: Schedule
+    """
+    file_dict = j_open(filename)
+    
+    # Make schedule object.
+    current_schedule = Schedule(file_dict['max_tas'])
+
+    # Create ta list.
+    for ta_dict in file_dict['tas']:
+        ta = Ta(ta_dict['name'], ta_dict['id'])
+        current_schedule.tas.append(ta)
+
+    # Add labs to import schedule.
+    for day in file_dict['week']:
+        # day is a key, not a dict
+        for lab_dict in file_dict['week'][day]:
+            lab = Lab(lab_dict['id'], lab_dict['start_time'],\
+                lab_dict['end_time'], current_schedule.max_tas)
+            current_schedule.addsection(lab, day)
+    
+    # Return imported schedule.
+    return current_schedule
