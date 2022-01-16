@@ -132,7 +132,19 @@ def createtas(current_schedule: Optional[Schedule] = None) -> None:
             'Must be of form <NAME>.json', ' >> ', str, isjson)
         
         # TODO: Write fileio function to import JSON to TA list.
-        pass
+        from fileio import jsontotas
+        tas, undergrad_max, graduate_max = jsontotas(filename)
+
+        #? Verify anything...?
+        current_schedule._undergrad_max = undergrad_max
+        current_schedule._graduate_max = graduate_max
+        current_schedule.tas = tas
+
+        assigntas(current_schedule=current_schedule)
+        return
+
+    # no file?  Manually enter it!
+    print('not yet implemented')
 
 def assigntas(current_schedule: Optional[Schedule] = None) -> None:
     """Subroutine to automagically solve for one or more potential
@@ -166,10 +178,16 @@ def assigntas(current_schedule: Optional[Schedule] = None) -> None:
         from fileio import jsontoschedule
         current_schedule = jsontoschedule(filename)
 
-    from display import grid
-    grid(current_schedule.todict())
+    #! Incredibly terribly no good solution to the boolean problem.
+    output = repr(current_schedule.todict()).replace("'", '"')\
+            .replace('False', 'false').replace('True', 'true')
+    with open('current_schedule.json', 'w') as file:
+        file.write(output)
 
-    input()
+    from _support import sl_input
+    print('Schedule has been saved to current_schedule.json.\
+        \nPress any key to continue')
+    __ = sl_input(0)
 
 def main():
     """ Entry point for Lab Scheduler application.
@@ -193,6 +211,8 @@ def main():
 
         if selection == "1":
             semesterschedule()
+        elif selection == "2":
+            createtas()
         else:
             break
 
