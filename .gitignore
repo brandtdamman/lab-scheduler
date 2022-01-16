@@ -134,3 +134,4 @@ src/python/tests/spring21.json
 
 test_*.json
 test_*.py
+current_schedule.json
