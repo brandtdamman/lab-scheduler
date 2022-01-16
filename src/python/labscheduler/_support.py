@@ -48,7 +48,7 @@ def isjson(filename: str) -> bool:
     period = filename.rfind('.')
     if period == -1:
         return False
-    if filename[period:] != 'json':
+    if filename[period:] != '.json':
         return False
     return True
 
