@@ -23,7 +23,7 @@ def semesterschedule():
         print(f'Invalid input ({max_tas}), using maximum of 2 TAs per lab')
         max_tas = 2
 
-    current_schedule = Schedule()
+    current_schedule = Schedule(max_tas)
 
     import _support
 
@@ -77,6 +77,7 @@ def semesterschedule():
         #     except ValueError as e:
         #         print(str(e))
 
+        current_schedule.addsection(current_section, day)
         print(f'Lab section {section_number} added to schedule')
 
     # Temporary function for sorting day-to-day schedule.
@@ -92,7 +93,13 @@ def semesterschedule():
     assigntas(current_schedule=current_schedule)
 
 def assigntas(current_schedule: Optional[Schedule] = None) -> None:
-    pass
+    if not current_schedule:
+        print('NOT YET IMPLEMENTED.')
+
+    from display import grid
+    grid(current_schedule.todict())
+
+    input()
 
 def main():
     """ Entry point for Lab Scheduler application.

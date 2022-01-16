@@ -79,7 +79,9 @@ class Lab(Serialized):
         return f'Lab Section {self.id} at {self._start_str}-{self._end_str}'
 
 class Schedule(Serialized):
-    def __init__(self):
+    def __init__(self, max_tas: int):
+        self.max_tas: int = max_tas
+        self.tas: list = []
         self.week: dict = {}
         
         # Setup the workweek
@@ -89,11 +91,11 @@ class Schedule(Serialized):
         self.week['Thursday'] = []
         self.week['Friday'] = []
 
-    def _matchDay(self, val: str) -> bool:
-        for key in self.week:
-            if key == val or key[0] == val.upper():
-                return True
-        return False
+    # def _matchDay(self, val: str) -> bool:
+    #     for key in self.week:
+    #         if key == val or key[0] == val.upper():
+    #             return True
+    #     return False
 
     def addsection(self, section: Lab, day: str):
         from _support import match_day
