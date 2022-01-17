@@ -178,6 +178,10 @@ def assigntas(current_schedule: Optional[Schedule] = None) -> None:
         from fileio import jsontoschedule
         current_schedule = jsontoschedule(filename)
 
+
+    # Begin automagically assigning TAs to lab sections.
+
+
     #! Incredibly terribly no good solution to the boolean problem.
     output = repr(current_schedule.todict()).replace("'", '"')\
             .replace('False', 'false').replace('True', 'true')
